@@ -20,6 +20,7 @@ return new class extends Migration
 
             $table->tinyInteger('day');
             $table->time('time');
+            $table->text('img');
 
             $table->timestamps();
         });

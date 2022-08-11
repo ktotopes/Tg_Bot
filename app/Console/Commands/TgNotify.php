@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Boss;
 use Illuminate\Console\Command;
 use Telegram\Bot\Api;
+use Telegram\Bot\FileUpload\InputFile;
 
 class TgNotify extends Command
 {
@@ -35,12 +36,12 @@ class TgNotify extends Command
             <b>$boss->name</b> через 15 минут
             TEXT;
 
+            $response = $telegram->sendPhoto([
+                'chat_id' => config('tg.chat_id'),
+                'caption'    => $text,
+                'photo'    => InputFile::create($boss->img,$boss->name.'.png'),
+                'parse_mode' => 'html'
+            ]);
         }
-
-        $response = $telegram->sendMessage([
-            'chat_id' => config('tg.chat_id'),
-            'text'    => $text,
-            'parse_mode' => 'html'
-        ]);
     }
 }
