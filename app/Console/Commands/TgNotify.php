@@ -17,17 +17,26 @@ class TgNotify extends Command
 
     public function handle()
     {
-        if (now()->minute < 45){
+        if (now()->minute < 45) {
             return;
         }
 
         $telegram = new Api(config('tg.token'));
 
-        $bosses = Boss::query()
-            ->where('time', '>', now()->format('H:i'))
-            ->where('time', '<=', now()->addHours(1)->format('H:00'))
-            ->where('day', '=', now()->dayOfWeek)
-            ->get();
+        $nextHourTime = now()->addHours(1)->format('H:00');
+
+        if ($nextHourTime != '00:00') {
+            $bosses = Boss::query()
+                ->where('time', '>', now()->format('H:i'))
+                ->where('time', '<=', $nextHourTime)
+                ->where('day', '=', now()->dayOfWeek)
+                ->get();
+        } else {
+            $bosses = Boss::query()
+                ->where('time', '=', '00:00')
+                ->where('day', '=', now()->addDays(1)->dayOfWeek)
+                ->get();
+        }
 
         $text = '';
 
@@ -37,10 +46,10 @@ class TgNotify extends Command
             TEXT;
 
             $response = $telegram->sendPhoto([
-                'chat_id' => config('tg.chat_id'),
+                'chat_id'    => config('tg.chat_id'),
                 'caption'    => $text,
-                'photo'    => InputFile::create($boss->img,$boss->name.'.png'),
-                'parse_mode' => 'html'
+                'photo'      => InputFile::create($boss->img, $boss->name . '.png'),
+                'parse_mode' => 'html',
             ]);
         }
     }
